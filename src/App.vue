@@ -1,23 +1,37 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import axios from 'axios';
-import WheatherSummary from './components/WheatherSummary.vue';
-import Highlights from './components/Highlights.vue';
-import { BASE_URL, API_KEY } from './constants/index';
-import Coords from './components/Coords.vue';
-import Humidity from './components/Humidity.vue';
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+import WheatherSummary from './components/WheatherSummary.vue'
+import Highlights from './components/Highlights.vue'
+import { BASE_URL, API_KEY } from './constants/index'
+import Coords from './components/Coords.vue'
+import Humidity from './components/Humidity.vue'
 
-const city = ref('Moscow');
-const weatherInfo = ref(null);
-const isError = computed(() => weatherInfo?.value?.cod !== 200);
+const city = ref('Moscow')
+const weatherInfo = ref(null)
 
 function getWeather() {
-  axios.get(`${BASE_URL}?q=${city.value}&units=metric&appid=${API_KEY}`).then((data) => {
-    weatherInfo.value = data.data;
-  }).catch((err) => {
-    weatherInfo.value = err.response.data;
-    console.log(err);
-  });
+  const sectionLeft = document.querySelector('.section-left');
+  const sectionRight = document.querySelector('.section-right');
+  const bottom = document.querySelector('.bottom');
+  const errorBlock = document.querySelector('.error');
+  axios
+    .get(`${BASE_URL}?q=${city.value}&units=metric&appid=${API_KEY}`)
+    .then((data) => {
+      weatherInfo.value = data.data;
+      sectionLeft.classList.remove('section-error');
+      sectionRight.classList.remove('closed');
+      bottom.classList.remove('closed');
+      errorBlock.classList.remove('opened');
+    })
+    .catch((err) => {
+      weatherInfo.value = err.response.data;
+      console.log(err);
+      sectionLeft.classList.add('section-error');
+      sectionRight.classList.add('closed');
+      bottom.classList.add('closed');
+      errorBlock.classList.add('opened');
+    })
 }
 onMounted(getWeather)
 </script>
@@ -28,13 +42,13 @@ onMounted(getWeather)
       <div class="container">
         <div class="laptop">
           <div class="sections">
-            <section :class="['section', 'section-left', { 'section-error': isError }]">
+            <section class="section section-left">
               <div class="info">
                 <div class="city-inner">
-                  <input v-model="city" type="text" class="search" @keyup.enter="getWeather">
-                  <button @click="getWeather" class="search-button"/>
+                  <input v-model="city" type="text" class="search" @keyup.enter="getWeather" />
+                  <button @click="getWeather" class="search-button" />
                 </div>
-                <WheatherSummary v-if="!isError" :weatherInfo="weatherInfo" />
+                <WheatherSummary v-if="weatherInfo?.weather" :weatherInfo="weatherInfo" />
                 <div class="error">
                   <div class="error-title">
                     Something went wrong!
@@ -45,11 +59,11 @@ onMounted(getWeather)
                 </div>
               </div>
             </section>
-            <section v-if="!isError" class="section section-right">
+            <section class="section section-right">
               <Highlights :weatherInfo="weatherInfo" />
             </section>
           </div>
-          <div v-if="!isError" class="sections">
+          <div class="sections bottom">
             <Coords :coord="weatherInfo?.coord" />
             <Humidity :humidity="weatherInfo?.main?.humidity" />
           </div>
@@ -148,6 +162,7 @@ onMounted(getWeather)
     width: 100%
 
 .error
+  display: none
   padding-top: 20px
   &-title
     font-size: 18px
@@ -155,4 +170,10 @@ onMounted(getWeather)
 .error-message
   padding-top: 20px
   font-size: 14px
+
+.closed
+  display: none
+
+.opened
+  display: block
 </style>
