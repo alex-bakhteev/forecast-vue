@@ -35,7 +35,7 @@ onMounted(getWeather)
                   <button @click="getWeather" class="search-button"/>
                 </div>
                 <WheatherSummary v-if="!isError" :weatherInfo="weatherInfo" />
-                <div v-else="" class="error">
+                <div class="error">
                   <div class="error-title">
                     Something went wrong!
                     <div v-if="weatherInfo?.message" class="error-message">
@@ -68,7 +68,7 @@ onMounted(getWeather)
   align-items: center
   min-height: 100vh
   padding: 20px 0
-  background-color: #59585d
+  background-color: #fff
 
 .laptop
   width: 100%
